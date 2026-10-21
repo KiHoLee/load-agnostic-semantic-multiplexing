@@ -1,0 +1,162 @@
+{
+ "shared_U4": {
+  "per_seed": {
+   "1": {
+    "U": 4,
+    "own_share": 0.4794928513582644,
+    "effective_width": 25.68540620803833,
+    "tx_own_share": 0.9929224252700806,
+    "tx_effective_width": 443.7944641113281
+   },
+   "2": {
+    "U": 4,
+    "own_share": 0.527895359294752,
+    "effective_width": 44.78910160064697,
+    "tx_own_share": 0.9920579046010971,
+    "tx_effective_width": 436.73748779296875
+   },
+   "3": {
+    "U": 4,
+    "own_share": 0.5486857886625524,
+    "effective_width": 31.873571395874023,
+    "tx_own_share": 0.9928762763738632,
+    "tx_effective_width": 455.5122375488281
+   }
+  },
+  "own_share_mean": 0.5186913331051896,
+  "effective_width_mean": 34.116026401519775,
+  "tx_own_share_mean": 0.9926188687483469,
+  "tx_effective_width_mean": 445.3480631510417
+ },
+ "shared_U6": {
+  "per_seed": {
+   "1": {
+    "U": 6,
+    "own_share": 0.562238130186233,
+    "effective_width": 70.73148600260417,
+    "tx_own_share": 0.9922900597254435,
+    "tx_effective_width": 316.4399719238281
+   },
+   "2": {
+    "U": 6,
+    "own_share": 0.5805767478560765,
+    "effective_width": 70.92777633666992,
+    "tx_own_share": 0.9922701120376587,
+    "tx_effective_width": 317.9959411621094
+   },
+   "3": {
+    "U": 6,
+    "own_share": 0.5843605641233783,
+    "effective_width": 71.90132141113281,
+    "tx_own_share": 0.9920786817868551,
+    "tx_effective_width": 317.7185363769531
+   }
+  },
+  "own_share_mean": 0.5757251473885626,
+  "effective_width_mean": 71.18686125013564,
+  "tx_own_share_mean": 0.9922129511833191,
+  "tx_effective_width_mean": 317.3848164876302
+ },
+ "shared_agn": {
+  "per_seed": {
+   "1": {
+    "U": 6,
+    "own_share": 0.8640202489817571,
+    "effective_width": 62.50112851460775,
+    "tx_own_share": 0.9941394527753195,
+    "tx_effective_width": 347.9120178222656
+   },
+   "2": {
+    "U": 6,
+    "own_share": 0.8671049449193445,
+    "effective_width": 67.06111971537273,
+    "tx_own_share": 0.9949805041154226,
+    "tx_effective_width": 339.6696472167969
+   },
+   "3": {
+    "U": 6,
+    "own_share": 0.802579231411876,
+    "effective_width": 57.49268786112467,
+    "tx_own_share": 0.990924060344696,
+    "tx_effective_width": 348.8865966796875
+   }
+  },
+  "own_share_mean": 0.8445681417709926,
+  "effective_width_mean": 62.351645363701714,
+  "tx_own_share_mean": 0.993348005745146,
+  "tx_effective_width_mean": 345.4894205729167
+ },
+ "shared_agn16": {
+  "per_seed": {
+   "1": {
+    "U": 16,
+    "own_share": 0.5561282389232493,
+    "effective_width": 68.48622488975525,
+    "tx_own_share": 0.776008877903223,
+    "tx_effective_width": 167.61868286132812
+   },
+   "2": {
+    "U": 16,
+    "own_share": 0.5557424904923678,
+    "effective_width": 64.77708458900452,
+    "tx_own_share": 0.778231967240572,
+    "tx_effective_width": 170.0563507080078
+   },
+   "3": {
+    "U": 16,
+    "own_share": 0.5469085127502282,
+    "effective_width": 63.78797745704651,
+    "tx_own_share": 0.7652245871722698,
+    "tx_effective_width": 171.22181701660156
+   }
+  },
+  "own_share_mean": 0.5529264140552818,
+  "effective_width_mean": 65.68376231193542,
+  "tx_own_share_mean": 0.7731551441053549,
+  "tx_effective_width_mean": 169.63228352864584
+ },
+ "shared_U4_randmask": {
+  "per_seed": {
+   "1": {
+    "U": 4,
+    "own_share": 0.05128181377052952,
+    "effective_width": 1006.4861755371094,
+    "tx_own_share": 0.20191192626953125,
+    "tx_effective_width": 549.6041259765625
+   },
+   "2": {
+    "U": 4,
+    "own_share": 0.05222035790228478,
+    "effective_width": 1025.9458312988281,
+    "tx_own_share": 0.18575580045580864,
+    "tx_effective_width": 558.638671875
+   },
+   "3": {
+    "U": 4,
+    "own_share": 0.05784377752447309,
+    "effective_width": 1023.6890411376953,
+    "tx_own_share": 0.20349089056253433,
+    "tx_effective_width": 560.7845458984375
+   }
+  },
+  "own_share_mean": 0.05378198306576246,
+  "effective_width_mean": 1018.7070159912109,
+  "tx_own_share_mean": 0.1970528724292914,
+  "tx_effective_width_mean": 556.3424479166666
+ },
+ "shared_U4_K1": {
+  "per_seed": {
+   "1": {
+    "U": 4,
+    "own_share": 0.5685365578635123,
+    "effective_width": 18.954633712768555,
+    "tx_own_share": 0.9885615408420563,
+    "tx_effective_width": 169.38275146484375
+   }
+  },
+  "own_share_mean": 0.5685365578635123,
+  "effective_width_mean": 18.954633712768555,
+  "tx_own_share_mean": 0.9885615408420563,
+  "tx_effective_width_mean": 169.38275146484375
+ }
+}

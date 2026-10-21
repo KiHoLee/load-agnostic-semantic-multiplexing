@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+data/emb_*.pt
+data/ckpt/*
+!data/ckpt/shared_U4_s1.pt
+!data/ckpt/shared_agn_s1.pt
+!data/ckpt/ortho_U4_s1.pt
+Code/logs/
+letter_mech_table.tex

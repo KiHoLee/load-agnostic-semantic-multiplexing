@@ -1,0 +1,7 @@
+Learned masks partition the block: own energy in dimensions the user dominates (>=90% of that dimension's mask energy), and effective dimensions per user (participation ratio of m_u^2); seed means
+shared_U4            (U= 4, n=3): own-energy share 0.52, effective dims     34 of d_s/U=768
+shared_U6            (U= 6, n=3): own-energy share 0.58, effective dims     71 of d_s/U=512
+shared_agn           (U= 6, n=3): own-energy share 0.84, effective dims     62 of d_s/U=512
+shared_agn16         (U=16, n=3): own-energy share 0.55, effective dims     66 of d_s/U=192
+shared_U4_randmask   (U= 4, n=3): own-energy share 0.05, effective dims   1019 of d_s/U=768
+shared_U4_K1         (U= 4, n=1): own-energy share 0.57, effective dims     19 of d_s/U=768

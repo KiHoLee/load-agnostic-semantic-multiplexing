@@ -1,160 +1,127 @@
-# Semantic Multiplexing Gain in Wireless Systems via Expanded Embeddings: A BERT Case Study
+# Load-Agnostic Semantic Multiplexing of BERT Embeddings in an Expanded Shared Block
 
-Code, stored results, and supplementary material for the IEEE
-Communications Letters submission by Ki-Ho Lee, Hyun-Ho Choi, and
-Jung-Ryun Lee.
+Code, stored results, and trained models for the IEEE Communications Letters
+paper by Ki-Ho Lee, Hyun-Ho Choi, and Jung-Ryun Lee (revised manuscript of
+CL2026-2366, under review). Every figure and every number of the revised
+manuscript and of the response letter can be regenerated from this repository.
 
-Multiple users share one expanded embedding block of dimension
-`d_s = K * d_b`. Each user's frozen BERT sentence embedding is projected
-into the shared space, superimposed through learnable masks, and
-demultiplexed by user-wise attention. Every transceiver reported in the
-letter, including the conventional orthogonal scheme, is trained with
-SNR-aware MAML; the same architecture trained without MAML, as in the
-earlier JSAC paper, is included as a prior-art reference and is labelled
-"Training w/o MAML [5]" in the figures.
+## What the letter studies
 
-## Files
+Several users share one block of `d_s = K * d_b` real channel uses
+(`d_b = 768`, `K = 4`, `d_s = 3072`). Each user maps its frozen BERT sentence
+embedding to the block with a common learned transmit projection and its own
+learned mask. The receiver applies user-wise attention and a user-specific
+reverse projection (the decoder). Training is SNR-aware first-order MAML.
 
-| File | Purpose |
-|---|---|
-| `bert_semcom.py` | Shared library: BERT extractor, transceiver model, channel, MAML helpers |
-| `cl_experiments.py` | Held-out split, configurations trained without MAML, token-domain (ToDMA) comparison, linear probe, latency |
-| `cl_maml_all.py` | SNR-aware MAML training for every reported configuration, including the conventional orthogonal scheme |
-| `cl_maml_extra.py` | MAML expansion-factor sweep (K = 1, 2, 8) and DistilBERT replication |
-| `cl_todma_load.py` | Evaluates the token-domain scheme at U = 1, 2, 3, 5, 6 for the load sweep of Fig. 3 |
-| `replot_cl.py` | Regenerates Figs. 2 and 3 of the letter from the stored JSON results |
-| `probe_vs_cosine.py` | Supplementary probe-accuracy-versus-cosine-similarity analysis |
-| `fig_cl/*.json`, `fig_cl/*.csv` | Stored raw results behind every figure and every number quoted in the letter |
+* The uplink is distributed: every user scales its own signal to the energy
+  `d_s/U` for the announced load `U` and has its own Rayleigh coefficient with
+  phase pre-compensation.
+* At equal channel uses and per-user energy, the shared block matches
+  orthogonal dimension sharing (ODS) and provides no gain per channel use.
+* One transceiver with fixed weights, Proposed (one model), serves every load
+  from one to six users and every SNR from 0 to 30 dB. It stays within 0.018
+  of the transceivers trained per load and within two percent of dynamic ODS.
+  Without the one-step adaptation its CosSim changes by at most 0.003.
+* A user that joins before reconfiguration changes the CosSim of the announced
+  users of the one-model proposal by at most 0.001, against 0.015 to 0.071
+  under dynamic ODS.
+* Learned masks divide the transmitted energy almost orthogonally (own-energy
+  share 0.99, against 0.20 for random masks), and the user-specific decoders
+  separate the users.
 
-## Reproducing
+## Schemes
 
-Requirements: Python 3.10+, PyTorch (CUDA), `transformers`, `datasets`,
-`matplotlib`, `numpy`. AG News loads from the Hugging Face hub
-(`fancyzhx/ag_news` fallback included).
+| Name in the paper | Run names | Description |
+|---|---|---|
+| Proposed (multi-model) | `shared_U<U>` | proposal trained separately for each load `U` |
+| Proposed (one model) | `shared_agn` | one load-agnostic transceiver with six masks, trained once over random active subsets |
+| Dynamic ODS (multi-model) | `ortho_U<U>` | exclusive dimensions of the same block per user, learned linear projection, retrained for each load |
+| Static ODS-4 (one model) | `ortho_U4` evaluated by `rev_extra.py energy` | four fixed blocks of `d_b`, at most four users, matched energy |
+| Static ODS-6 (one model) | `ortho_U6` evaluated by `rev_extra.py energy` | six fixed blocks of `d_s/6` at every load, matched energy |
+| ToDMA reference | `Code/fig_cl/cl_results*.json` | token codewords, 24 slots of 128 channel uses, OMP detection |
 
-```bash
-python cl_experiments.py --save-dir fig_cl   # runs without MAML + token-domain comparison (~3 h on a laptop GPU)
-python cl_maml_all.py    --save-dir fig_cl   # MAML runs (~9 h)
-python cl_maml_extra.py  --save-dir fig_cl   # MAML K sweep + DistilBERT (~6 h)
-python cl_todma_load.py  --save-dir fig_cl   # token-domain load sweep (evaluation only)
-python replot_cl.py                          # Figs. 2 and 3 from the stored results
-python probe_vs_cosine.py                    # supplementary analysis below
-```
+The static schemes give each served user the energy `d_s/min(U, U_d)`. They
+are evaluated as the dynamic ODS model for `U_d = 4` or `6` users at the SNR
+plus `10 log10(U_d/U)` for `U <= U_d`, which equals repetition into the idle
+blocks under a power limit per channel use.
 
-All experiments fix their random seeds (training seed 42, evaluation
-seed 123, token-domain seed 7) and evaluate on a held-out test split of
-2,000 AG News sentences disjoint from the 8,000-sentence training pool.
-The centering mean, the transceiver parameters, and the linear probe are
-fitted on the training pool only. `replot_cl.py` and
-`probe_vs_cosine.py` read only the stored results, so every figure is
-regenerable without rerunning the experiments.
+## Layout
 
-## Figures of the letter
-
-**Fig. 2 - per-user cosine similarity vs. SNR.** The proposed scheme for
-U = 1..4 at K = 4, the conventional orthogonal scheme, the two
-matched-budget comparison schemes (random-projection mask and the
-token-domain scheme at two slot/codeword splits), and the same
-architecture trained without MAML:
-
-![Fig. 2](fig_cl/cl_fig_mux.png)
-
-**Fig. 3 - aggregate fidelity across load at 10 dB.** Three bars per
-load point (proposed, training without MAML, and the token-domain
-scheme at 24x128), the conventional single-user block on the left, and
-the fully loaded orthogonal aggregate as the dash-dotted reference:
-
-![Fig. 3](fig_cl/cl_fig_agg.png)
-
-At full load the shared block stays within 1% of the fully loaded
-orthogonal aggregate over the same 3072 channel uses (3.59 against
-3.62), and under overload it reaches 1.45 times that aggregate at
-U = 6.
-
-## Supplementary: probe accuracy vs. cosine similarity
-
-The letter measures semantic fidelity by the cosine similarity of the
-recovered embeddings and corroborates it with a downstream perception
-metric, namely the AG News topic accuracy of a linear probe fitted on
-the training pool and applied to the recovered test embeddings. The
-noiseless reference is about 0.854 and the sampling error is about
-+/-0.01.
-
-Across 7 schemes x 7 SNRs (49 operating points), probe accuracy tracks
-cosine similarity with a Pearson correlation of **r = 0.903**:
-
-![Probe accuracy vs. cosine similarity](fig_cl/probe_vs_cosine.png)
-
-Two readings follow. First, the low-SNR advantage of the embedding
-schemes over the token-domain scheme appears in both metrics, for
-example 0.848 against 0.772 in cosine similarity and 0.805 against
-0.762 in accuracy at 5 dB. Second, schemes within about 0.01 of each
-other in cosine similarity differ in accuracy by at most 0.023, which
-is within about two standard errors of the sampling noise, so the
-cosine metric used throughout the letter is consistent with downstream
-perception on this task.
-
-## Citation
-
-The letter is under review. Until it appears, please cite this
-repository together with the earlier shared-embedding paper:
-
-> K.-H. Lee, H.-H. Choi, and J.-R. Lee, "Transformer-based shared
-> embedding for multiple access in semantic communications," *IEEE J.
-> Sel. Areas Commun.*, vol. 44, pp. 2622-2637, 2026.
-
-## Revision (IEEE Communications Letters, resubmission of CL2026-2366, October 2026)
-
-Everything behind the revised letter *Load-Agnostic Semantic Multiplexing of BERT
-Embeddings in an Expanded Shared Block* lives in `revision/`. The revised
-system model has per-user power normalization (every user scales its own masked
-signal to the block energy `d_s/U`) and independent Rayleigh fading per user
-with phase pre-compensation; the receiver uses a user-specific reverse
-projection; training is first-order SNR-aware MAML batched over 64 frames
-(150 epochs x 100 steps, meta-batch 4, alpha 5e-4, Adam 1e-3), and every
-reported point is evaluated after one inner step on 2,000 held-out frames.
-
-### Layout
+The paths are the ones cited in the manuscript and the response letter.
 
 | Path | Content |
 |---|---|
-| `revision/code/rev_lib.py` | shared library: data split and embedding cache, `SharedMux` (proposal) and `OrthoDS` (orthogonal dimension sharing), channel, MAML training, adaptation and evaluation, diagnostics |
-| `revision/code/rev_run.py` | trains and evaluates one configuration, writes `data/<name>_s<seed>.json` and a checkpoint |
-| `revision/code/rev_queue.sh` | every run of the letter grouped by figure/table: `main`, `main_ortho`, `ortho_s3`, `scale`, `decomp`/`decomp_a`/`decomp_b`, `ablate`/`ablate_b`, `general` |
-| `revision/code/rev_cache.py` | builds the embedding caches (`data/emb_*.pt`, not stored here; regenerated from AG News, SST-2, BERT-base, DistilBERT) |
-| `revision/code/rev_collect.py` | summarizes all JSON results into `data/rev_summary.csv` and prints the tables |
-| `revision/code/rev_replot.py` | regenerates Fig. 2 and Fig. 3 from `data/` only |
-| `revision/code/rev_diag.py` | receiver diagnostics of a checkpoint (SIR before/after attention and decoder, random masks at test time) |
-| `revision/code/rev_latency.py` | per-frame latency of the stored checkpoints on one device |
-| `revision/code/rev_pilot*.sh` | pilot runs that fixed the budget and the receiver design (`data/pilot/`) |
-| `revision/data/*.json` | one file per run (76 runs): config, per-SNR per-user CosSim, worst user, probe accuracy, robustness evaluations, mask statistics |
-| `revision/data/rev_summary.csv`, `rev_results_table.txt`, `rev_numbers.txt` | aggregated tables and every number quoted in the letter |
-| `revision/data/diag/`, `revision/data/rev_latency.json` | diagnostics of the seed-1 full-load model and latency measurements |
-| `revision/ckpt/` | seed-1 checkpoints of the proposal at U=4, the load-agnostic model, and ODS at U=4 |
-| `revision/fig_cl/` | Fig. 1 (TikZ output), Fig. 2 and Fig. 3 of the revised letter |
+| `Code/rev_lib.py` | shared library: data split and embedding cache, transceivers, channel, MAML training, adaptation, evaluation, diagnostics |
+| `Code/rev_run.py` | trains and evaluates one configuration, writes `data/<name>_s<seed>.json` and a checkpoint in `data/ckpt/` |
+| `Code/rev_queue.sh` | every training run grouped by figure and table: `main`, `main_ortho`, `ortho_s3`, `scale`, `decomp`, `ablate`, `general` |
+| `Code/extra_runs.sh` | evaluations added in the revision: no adaptation, matched-energy static ODS, receiver SIR, joining user, mask energy division |
+| `Code/rev_extra.py` | modes `noadapt`, `energy`, `diag`, `join` used by `extra_runs.sh` |
+| `Code/mask_partition.py` | own-energy share and effective width of the transmitted energy per mask |
+| `Code/rev_cache.py` | builds the embedding caches `data/emb_*.pt` (not stored; AG News, SST-2, BERT-base, DistilBERT) |
+| `Code/rev_collect.py` | collects all run files into `data/rev_summary.csv` and prints the tables |
+| `Code/rev_replot.py` | regenerates Figs. 2 and 3 from `data/` only |
+| `Code/letter_mechanism.py` | response-letter Fig. R1 and the mask statistics table |
+| `Code/rev_diag.py`, `Code/rev_latency.py` | mask and attention statistics of a checkpoint; latency per frame |
+| `Code/rev_pilot*.sh` | pilot runs that fixed the training length and the receiver design (`data/pilot/`) |
+| `Code/bert_semcom.py`, `Code/cl_experiments.py`, `Code/cl_todma_load.py`, `Code/fig_cl/` | ToDMA reference of the original submission, reused unchanged |
+| `data/*.json` | one file per run: configuration, per-SNR per-user CosSim, worst user, probe accuracy, robustness evaluations, mask statistics |
+| `data/extra/` | results of `extra_runs.sh` and their printed summaries |
+| `data/diag/` | mask and attention statistics of the seed-1 models |
+| `data/rev_summary.csv`, `data/rev_latency.json` | summary of all runs; parameter counts and latency |
+| `data/ckpt/` | seed-1 checkpoints of Proposed (multi-model) at `U = 4`, Proposed (one model), and Dynamic ODS at `U = 4` |
+| `fig_cl/` | Fig. 1, Fig. 2, Fig. 3, and the letter figure R1 |
 
-### Figure and table map
+## Figure and table map
 
 | Item | Runs | Script |
 |---|---|---|
-| Fig. 2 | `shared_U4_s{1,2,3}`, `shared_agn_s{1,2,3}`, `ortho_U4_s{1,2,3}`, `shared_U4_randmask_s1`, `shared_U4_joint_s1`, ToDMA from `code/fig_cl/cl_results.json` | `rev_replot.py` |
-| Fig. 3 | `shared_U{1..6}_s{1,2,3}`, `shared_agn_s{1,2,3}`, `ortho_U{1..6}_s{1,2,3}`, ToDMA load sweep | `rev_replot.py` |
-| Table II | `shared_U4_{randmask,randtx,randboth,noattn,sharedrx}_s1`, `shared_U4_K{1,2,8}_s1`, `shared_U4_K1_randmask_s1`, `shared_U6_{randmask}_s1`, `shared_U4_joint_s1`, `shared_U4_tr{low,high}_s1` | `rev_collect.py` |
-| Table III | `robust` blocks of `shared_U4_s1` and `ortho_U4_s1`, `sst2_*`, `distil_*`, `shared_U{8,12,16}_s1`, `ortho_U{8,12,16}_s1` | `rev_collect.py` |
+| Fig. 2 | `shared_U4_s{1,2,3}`, `shared_agn_s{1,2,3}`, `ortho_U4_s{1,2,3}`, `extra/energy_ortho_U6_s*`, `shared_U4_randmask_s1`, `shared_U4_joint_s1`, ToDMA | `rev_replot.py` |
+| Fig. 3 | `shared_U{1..6}_s{1,2,3}`, `shared_agn_s{1,2,3}`, `ortho_U{1..6}_s{1,2,3}`, `extra/energy_ortho_U{4,6}_s*`, ToDMA load runs | `rev_replot.py` |
+| Table II | `shared_U4_{randmask,randtx,randboth,noattn,sharedrx}_s1`, `shared_U4_K{1,2,8}_s1`, `shared_U4_K1_randmask_s1`, `shared_U6_randmask_s1`, `shared_U4_joint_s1`, `shared_U4_tr{low,high}_s1`, MAML configuration runs | `rev_collect.py` |
+| Table III | robustness blocks of `shared_U4_s1` and `ortho_U4_s1`, `shared_U4_common_s1`, `ortho_U4_common_s1`, `sst2_*`, `distil_*`, `shared_U{8,12,16}_s1`, `ortho_U{8,12,16}_s1` | `rev_collect.py` |
+| Sec. IV-B, one model without adaptation | `extra/noadapt_shared_agn_s*.json` | `rev_extra.py noadapt` |
+| Sec. IV-B, joining user | `extra/join.json` | `rev_extra.py join` |
+| Sec. IV-C, SIR per receiver stage | `extra/diag_*` | `rev_extra.py diag` |
+| Sec. IV-C, energy division of the masks | `extra/mask_partition.json` | `mask_partition.py` |
+| Letter Fig. R1 and mask table | `extra/diag_*`, `diag/`, `effdim_spectrum_test.npy` | `letter_mechanism.py` |
 
-### Reproduction
+## Reproduction
+
+Requirements: Python 3.10 or later, PyTorch, `transformers`, `datasets`,
+`numpy`, `matplotlib`. Run the scripts from `Code/`.
 
 ```bash
-cd revision/code
-python rev_cache.py                       # embedding caches (needs transformers, datasets)
-EXTRA="--per-user-rx" EP=150 BS=64 N_PAR=3 bash rev_queue.sh main
-EXTRA="--per-user-rx" EP=150 BS=64 N_PAR=3 bash rev_queue.sh main_ortho   # and scale, decomp, ablate, general
-python rev_collect.py ../data && python rev_replot.py
-python rev_diag.py ../data/ckpt/shared_U4_s1.pt --snr 10
+cd Code
+python rev_cache.py                                      # embedding caches
+PY=python EXTRA="--per-user-rx" EP=150 BS=64 N_PAR=3 bash rev_queue.sh main
+PY=python EXTRA="--per-user-rx" EP=150 BS=64 N_PAR=3 bash rev_queue.sh main_ortho   # also ortho_s3, scale, decomp, ablate, general
+PY=python bash extra_runs.sh                             # evaluations added in the revision
+python rev_collect.py ../data && python rev_replot.py    # tables and Figs. 2 and 3
 ```
 
-Seeds: training 1, 2, 3; evaluation 123. Devices used: Apple M5 Max (MPS, torch 2.5.1)
-and an NVIDIA RTX A4500 (CUDA, torch 2.11); the ToDMA results are the ones of the
-original submission (same per-user energy and independent per-user fading).
-GPU training is not bit-reproducible, so a re-run reproduces the reported values
-within the seed spread reported in the letter (at most 0.0007 in CosSim).
+`rev_replot.py`, `rev_collect.py`, and `letter_mechanism.py` read only the
+stored results, so the figures and tables can be regenerated without training.
+`extra_runs.sh` and `mask_partition.py` need the checkpoints of all seeds,
+which `rev_queue.sh` writes to `data/ckpt/`.
+
+Training uses 150 epochs of 100 steps with 64 frames per task, four SNR tasks
+per meta-batch drawn from 0 to 25 dB, an inner rate of 5e-4, and Adam at 1e-3.
+Every point is evaluated on 2,000 held-out frames, after one inner step on 256
+training frames unless stated otherwise. Training seeds are 1, 2, and 3, and
+the evaluation seed is 123. The runs used an Apple M5 Max (MPS, torch 2.5.1)
+and an NVIDIA RTX A4500 (CUDA, torch 2.11). GPU training is not bit-exact, so
+a rerun reproduces the reported values within the seed spread of the paper.
+
+## Original submission
+
+The code and results of the original submission, including the withdrawn
+overload figure, are kept at the tag `original-submission`.
+
+## Citation
+
+The letter is under review. Until it appears, please cite this repository and
+the earlier shared-embedding paper:
+
+> K.-H. Lee, H.-H. Choi, and J.-R. Lee, "Transformer-based shared embedding
+> for multiple access in semantic communications," *IEEE J. Sel. Areas
+> Commun.*, vol. 44, pp. 2622-2637, 2026.
