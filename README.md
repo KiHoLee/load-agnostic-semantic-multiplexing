@@ -122,6 +122,10 @@ overload figure, are kept at the tag `original-submission`.
 The letter is under review. Until it appears, please cite this repository and
 the earlier shared-embedding paper:
 
+> K.-H. Lee, H.-H. Choi, and J.-R. Lee, "Code and data for load-agnostic
+> semantic multiplexing," 2026. [Online]. Available:
+> https://github.com/KiHoLee/load-agnostic-semantic-multiplexing
+
 > K.-H. Lee, H.-H. Choi, and J.-R. Lee, "Transformer-based shared embedding
 > for multiple access in semantic communications," *IEEE J. Sel. Areas
 > Commun.*, vol. 44, pp. 2622-2637, 2026.
